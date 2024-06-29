@@ -4,29 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tweet Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        label, textarea {
+            display: block;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #4cae4c;
+        }
+        #predictionResult {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        #error {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Predict Tweet Category</h1>
     <form id="predictionForm" method="post" action="/predict">
-        <label for="textInput">Enter your tweet:</label><br>
-        <textarea id="textInput" name="tweet" rows="4" cols="50"></textarea><br>
+        <label for="textInput">Enter your tweet:</label>
+        <textarea id="textInput" name="tweet" rows="4" cols="50" required></textarea><br>
         <input type="submit" value="Predict">
     </form>    
     
     <div id="predictionResult"></div>
+    <div id="error"></div>
 
     <script>
-        // Function to handle form submission
         document.getElementById("predictionForm").onsubmit = function(event) {
-            event.preventDefault(); // Prevent the form from submitting normally
+            event.preventDefault();
 
-            // Get the text input value
             var textInput = document.getElementById("textInput").value;
+            var data = { "tweet": textInput };
 
-            // Create a JSON object with the text input
-            var data = { "text": textInput };
-
-            // Send a POST request to the Flask backend
             fetch("/predict", {
                 method: "POST",
                 headers: {
@@ -36,10 +72,15 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Display the prediction result
-                document.getElementById("predictionResult").innerText = "Prediction: " + data.prediction;
+                if (data.error) {
+                    document.getElementById("error").innerText = "An error occurred: " + data.error;
+                } else {
+                    document.getElementById("predictionResult").innerText = "Prediction: " + data.prediction;
+                    document.getElementById("error").innerText = "";
+                }
             })
             .catch(error => {
+                document.getElementById("error").innerText = "An error occurred: " + error.message;
                 console.error('Error:', error);
             });
         };
